@@ -5,6 +5,30 @@
    Thème clair uniquement, même si l'appareil est en mode sombre.
    ========================================================== */
 
+/* Polices hébergées sur le site (licence OFL, voir fonts/) :
+   aucune requête vers Google ou un autre service. */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fonts/fraunces-opsz-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fonts/fraunces-opsz-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fonts/inter-wght-normal.woff2") format("woff2");
+}
+
 :root {
   color-scheme: light;
   --bg: #ffffff;
@@ -313,6 +337,9 @@ h2 {
   font-size: .85rem;
   color: var(--muted);
 }
+
+.foot p { margin: 0; }
+.foot .legal { margin-top: .9rem; font-size: .75rem; line-height: 1.7; opacity: .8; }
 
 /* ---------- Visionneuse ---------- */
 .lightbox {

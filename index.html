@@ -8,9 +8,8 @@
   <title>1 Jour 1 Ulysse</title>
   <meta name="description" content="Chaque jour, une photo d'Ulysse, berger australien noir tricolore.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/fraunces-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/inter-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -96,6 +95,11 @@
 
   <footer class="foot">
     <p>1 Jour 1 Ulysse · une photo par jour depuis le <span id="since"></span></p>
+    <p class="legal">
+      Site personnel non commercial · Photos © tous droits réservés<br>
+      Hébergé par GitHub, Inc., 88 Colin P Kelly Jr Street, San Francisco, CA 94107, États-Unis<br>
+      Aucun cookie, aucun suivi : ce site ne collecte aucune donnée.
+    </p>
   </footer>
 
   <dialog class="lightbox" id="lightbox" aria-label="Photo en grand">
