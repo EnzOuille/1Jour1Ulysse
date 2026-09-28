@@ -1,0 +1,8 @@
+# Photos originales : elles contiennent des métadonnées (GPS, date, téléphone…)
+# et ne doivent JAMAIS être publiées. Seules les copies nettoyées de photos/ le sont.
+originaux/
+
+# Fichiers système
+Thumbs.db
+desktop.ini
+.DS_Store

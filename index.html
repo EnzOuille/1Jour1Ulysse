@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light only">
+  <meta name="theme-color" content="#ffffff">
+  <title>1 Jour 1 Ulysse</title>
+  <meta name="description" content="Chaque jour, une photo d'Ulysse, berger australien noir tricolore.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a href="#" class="brand" id="brand" aria-label="1 Jour 1 Ulysse — photo du jour">
+      <span class="brand-num">1</span> Jour <span class="brand-num">1</span> Ulysse
+    </a>
+    <nav class="top-nav" aria-label="Sections">
+      <a href="#archives">Archives</a>
+      <a href="#ulysse">Ulysse</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Photo du jour -->
+    <section class="daily" aria-labelledby="day-title">
+      <p class="birthday" id="birthday" hidden></p>
+
+      <div class="day-head">
+        <p class="kicker" id="day-kicker">Photo du jour</p>
+        <h1 class="day-title" id="day-title">&nbsp;</h1>
+      </div>
+
+      <figure class="photo-frame" id="photo-frame">
+        <button class="photo-btn" id="photo-btn" type="button" aria-label="Agrandir la photo">
+          <img id="photo" alt="" decoding="async">
+        </button>
+        <div class="empty" id="empty" hidden>
+          <span class="empty-paw" aria-hidden="true">🐾</span>
+          <p><strong>Aucune photo pour l'instant.</strong></p>
+          <p>Déposez les photos d'Ulysse dans le dossier <code>originaux/</code>,<br>
+             puis lancez <code>Mettre à jour les photos.bat</code>.</p>
+        </div>
+      </figure>
+
+      <nav class="day-nav" aria-label="Navigation entre les jours">
+        <button class="nav-btn" id="prev" type="button">
+          <span aria-hidden="true">←</span> <span class="nav-label">La veille</span>
+        </button>
+        <button class="today-btn" id="back-today" type="button" hidden>Aujourd'hui</button>
+        <button class="nav-btn" id="next" type="button">
+          <span class="nav-label">Le lendemain</span> <span aria-hidden="true">→</span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- Archives -->
+    <section class="archives" id="archives" aria-labelledby="archives-title">
+      <div class="section-head">
+        <h2 id="archives-title">Les jours précédents</h2>
+        <p class="muted" id="archives-count"></p>
+      </div>
+      <ol class="grid" id="grid"></ol>
+      <p class="muted archives-empty" id="archives-empty" hidden>
+        Les archives se rempliront jour après jour. Revenez demain&nbsp;!
+      </p>
+      <div class="more-wrap">
+        <button class="more-btn" id="more" type="button" hidden>Afficher plus de jours</button>
+      </div>
+    </section>
+
+    <!-- Présentation -->
+    <section class="about" id="ulysse" aria-labelledby="about-title">
+      <div class="about-photo" id="about-photo"></div>
+      <div class="about-text">
+        <p class="kicker">Présentation</p>
+        <h2 id="about-title">Voici Ulysse</h2>
+        <p>
+          Ulysse est un berger australien noir tricolore&nbsp;: une robe noire,
+          des marques blanches et des touches de feu sur le museau et les pattes.
+          Curieux, énergique et toujours partant pour une balade, il a désormais
+          son petit coin d'internet — une photo par jour, pas une de moins.
+        </p>
+        <dl class="facts">
+          <div><dt>Race</dt><dd>Berger australien</dd></div>
+          <div><dt>Robe</dt><dd>Noir tricolore</dd></div>
+          <div><dt>Né le</dt><dd>10 juillet 2023</dd></div>
+          <div><dt>Âge</dt><dd id="age">—</dd></div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>1 Jour 1 Ulysse · une photo par jour depuis le <span id="since"></span></p>
+  </footer>
+
+  <dialog class="lightbox" id="lightbox" aria-label="Photo en grand">
+    <form method="dialog"><button class="lightbox-close" aria-label="Fermer">×</button></form>
+    <img id="lightbox-img" alt="">
+  </dialog>
+
+  <script src="photos.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
