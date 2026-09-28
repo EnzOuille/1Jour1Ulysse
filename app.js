@@ -2,14 +2,14 @@
    1 Jour 1 Ulysse — logique du site
    La photo de chaque jour vient du calendrier (photos.js),
    généré par update-photos.ps1 : un jour passé garde toujours
-   sa photo. Si un jour manque au calendrier, on pioche dans
-   la liste de façon régulière.
+   sa photo. Un jour absent du calendrier reste sans photo,
+   jusqu'à ce que de nouvelles photos viennent le compléter.
    ========================================================== */
 (() => {
   "use strict";
 
   // ---------- Configuration ----------
-  const START_DATE = "2026-09-23"; // « Jour 1 » du site (AAAA-MM-JJ)
+  const START_DATE = "2026-09-18"; // « Jour 1 » du site (AAAA-MM-JJ)
   const BIRTH_DATE = "2023-07-10"; // naissance d'Ulysse
   const PORTRAIT = "photos/portrait.jpg"; // photo de la présentation
   const ARCHIVE_PAGE = 24;         // nombre de jours affichés par « Afficher plus »
@@ -34,12 +34,7 @@
   let shown = ARCHIVE_PAGE;
 
   const dayNumber = (n) => n - start + 1;
-  const photoFor = (n) => {
-    if (CALENDAR[toISO(n)]) return CALENDAR[toISO(n)];
-    if (!PHOTOS.length) return null;
-    const i = (((n - start) % PHOTOS.length) + PHOTOS.length) % PHOTOS.length;
-    return PHOTOS[i];
-  };
+  const photoFor = (n) => CALENDAR[toISO(n)] || null;
   const url = (p) => p.split("/").map(encodeURIComponent).join("/");
   const thumb = (p) => p.replace(/^photos\//, "photos/mini/");
 
@@ -74,7 +69,7 @@
       el.photo.alt = `Ulysse, le ${fmt(current, { day: "numeric", month: "long", year: "numeric" })}`;
       // Précharge les jours voisins pour une navigation fluide
       [current - 1, current + 1].forEach((d) => {
-        if (d >= first && d <= today) new Image().src = url(photoFor(d));
+        if (d >= first && d <= today && photoFor(d)) new Image().src = url(photoFor(d));
       });
     }
 
@@ -127,9 +122,8 @@
   function renderArchives() {
     const total = today - first; // jours précédents (hors aujourd'hui)
     el.grid.innerHTML = "";
-    el.archivesEmpty.hidden = total > 0 && PHOTOS.length > 0;
+    el.archivesEmpty.hidden = total > 0;
     el.archivesCount.textContent = total > 0 ? `${total} jour${total > 1 ? "s" : ""} d'Ulysse` : "";
-    if (!PHOTOS.length) { el.more.hidden = true; return; }
 
     const last = Math.max(first, today - shown);
     const frag = document.createDocumentFragment();
@@ -140,8 +134,10 @@
       b.type = "button";
       b.dataset.day = n;
       b.setAttribute("aria-current", String(n === current));
+      const p = photoFor(n);
       b.innerHTML =
-        `<div class="tile-img"><img loading="lazy" decoding="async" alt="" src="${url(thumb(photoFor(n)))}"></div>` +
+        (p ? `<div class="tile-img"><img loading="lazy" decoding="async" alt="" src="${url(thumb(p))}"></div>`
+           : `<div class="tile-img tile-missing" aria-hidden="true">🐾</div>`) +
         `<span class="tile-date"><b>${fmt(n, { day: "numeric", month: "short" })}</b><small>Jour ${dayNumber(n)}</small></span>`;
       b.setAttribute("aria-label", `Voir la photo du ${fmt(n, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`);
       b.addEventListener("click", () => show(n, { scroll: true }));

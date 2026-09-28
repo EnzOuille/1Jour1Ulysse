@@ -263,6 +263,14 @@ h2 {
   transition: transform .5s ease;
 }
 .tile:hover .tile-img img { transform: scale(1.04); }
+.tile-missing {
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  background: var(--surface);
+  border: 1.5px dashed var(--line);
+  opacity: .7;
+}
 .tile[aria-current="true"] .tile-img { outline-color: var(--accent); }
 .tile-date {
   display: block;

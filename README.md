@@ -12,7 +12,8 @@ Chaque jour, une photo d'Ulysse, berger australien noir tricolore né le 10 juil
 
 Le script (`update-photos.ps1`, nécessite [ImageMagick](https://imagemagick.org)) :
 - crée dans `photos/` une copie **nettoyée** de chaque photo : aucune métadonnée (GPS, date, modèle de téléphone…), taille réduite (2000 px), nom anonyme, plus une miniature dans `photos/mini/` ;
-- met à jour le **calendrier** dans `photos.js` : un jour passé garde toujours sa photo ; les jours suivants montrent d'abord les photos jamais vues, puis piochent au hasard sans répétition rapprochée.
+- met à jour le **calendrier** dans `photos.js` : un jour passé garde toujours sa photo, et chaque nouvelle photo reçoit **un seul jour** (jamais de répétition). Les jours restés sans photo sont complétés en premier, puis les jours suivants.
+- indique jusqu'à quelle date le calendrier est rempli. Au-delà, le site affiche « Pas encore de photo pour ce jour » : ajoutez des photos et relancez le script pour compléter les jours manquants.
 
 ## Confidentialité
 

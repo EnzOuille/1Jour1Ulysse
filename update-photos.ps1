@@ -8,8 +8,8 @@
 #       - nom anonyme (empreinte du fichier), + miniature
 #  3. Met a jour le calendrier (photos.js) :
 #       - un jour passe garde TOUJOURS sa photo
-#       - les jours suivants piochent d'abord dans les photos
-#         jamais montrees, puis au hasard sans repetition proche
+#       - chaque nouvelle photo recoit un des jours suivants,
+#         au hasard ; aucune photo n'est utilisee deux fois
 #  4. Avec -Publier : verifie tout, puis envoie sur GitHub.
 # ==========================================================
 param([switch]$Publier)
@@ -25,7 +25,6 @@ $inv      = [Globalization.CultureInfo]::InvariantCulture
 $MaxSide   = 2000   # taille max de la photo (px)
 $MiniSide  = 480    # taille max de la miniature (px)
 $Quality   = 82     # qualite JPEG
-$Horizon   = 365    # nombre de jours planifies a l'avance (apres les photos jamais montrees)
 $Exts      = @('.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.avif', '.gif', '.tif', '.tiff', '.bmp')
 
 function Say($msg, $color = 'Gray') { Write-Host "  $msg" -ForegroundColor $color }
@@ -154,14 +153,6 @@ if (Test-Path $listFile) {
   foreach ($m in [regex]::Matches($txt, '"(\d{4}-\d{2}-\d{2})"\s*:\s*"(photos/[^"]+)"')) { $cal[$m.Groups[1].Value] = $m.Groups[2].Value }
 }
 
-# Jours deja affiches sans entree au calendrier : on fige ce que le site a montre
-if ($oldPool.Count) {
-  for ($d = $start; $d -le $today; $d = $d.AddDays(1)) {
-    $k = & $key $d
-    if (-not $cal.ContainsKey($k)) { $cal[$k] = $oldPool[(($d - $start).Days % $oldPool.Count)] }
-  }
-}
-
 # Pool : ordre existant conserve, nouvelles photos ajoutees a la fin (au hasard)
 $files = @(Get-ChildItem -Path $outDir -File -Filter *.jpg | Where-Object { $_.Name -match '^[0-9a-f]{16}\.jpg$' } | ForEach-Object { "photos/$($_.Name)" })
 $fileSet = @{}; foreach ($p in $files) { $fileSet[$p] = $true }
@@ -169,29 +160,21 @@ $pool = @($oldPool | Where-Object { $fileSet.ContainsKey($_) })
 $inPool = @{}; foreach ($p in $pool) { $inPool[$p] = $true }
 $pool += Shuffle @($files | Where-Object { -not $inPool.ContainsKey($_) })
 
-# On garde les jours passes (et aujourd'hui), on replanifie l'avenir
+# Chaque jour deja planifie garde sa photo (sauf si le fichier a disparu)
 $used = @{}
 foreach ($k in @($cal.Keys)) {
   $d = [datetime]::ParseExact($k, 'yyyy-MM-dd', $inv)
-  if ($d -gt $today -or $d -lt $start -or -not $fileSet.ContainsKey($cal[$k])) { $cal.Remove($k) } else { $used[$cal[$k]] = $true }
+  if ($d -lt $start -or -not $fileSet.ContainsKey($cal[$k])) { $cal.Remove($k) } else { $used[$cal[$k]] = $true }
 }
 
-if ($pool.Count) {
-  $queue = New-Object System.Collections.Generic.Queue[string]
-  Shuffle @($pool | Where-Object { -not $used.ContainsKey($_) }) | ForEach-Object { $queue.Enqueue($_) }
-  $last = $null
-  $end = $today.AddDays($queue.Count + $Horizon)
-  for ($d = $start; $d -le $end; $d = $d.AddDays(1)) {
-    $k = & $key $d
-    if ($cal.ContainsKey($k)) { $last = $cal[$k]; continue }
-    if ($queue.Count -eq 0) {
-      # Nouveau tour : toutes les photos, melangees, sans repeter la veille
-      $bag = Shuffle $pool
-      if ($bag.Count -gt 1 -and $bag[0] -eq $last) { $bag[0], $bag[1] = $bag[1], $bag[0] }
-      $bag | ForEach-Object { $queue.Enqueue($_) }
-    }
-    $cal[$k] = $queue.Dequeue(); $last = $cal[$k]
-  }
+# Chaque photo jamais montree recoit UN jour, dans un ordre aleatoire, en
+# completant d'abord les jours restes sans photo (les plus anciens en premier).
+# Pas de repetition : le calendrier s'arrete quand il n'y a plus de photo.
+$queue = New-Object System.Collections.Generic.Queue[string]
+Shuffle @($pool | Where-Object { -not $used.ContainsKey($_) }) | ForEach-Object { $queue.Enqueue($_) }
+for ($d = $start; $queue.Count -gt 0; $d = $d.AddDays(1)) {
+  $k = & $key $d
+  if (-not $cal.ContainsKey($k)) { $cal[$k] = $queue.Dequeue() }
 }
 
 # ---------- 3. Ecriture de photos.js ----------
@@ -210,6 +193,18 @@ Say "Nouvelles photos : $added"
 if ($failed) { Say "Echecs           : $failed" 'Red' }
 Say "Photos au total  : $($pool.Count)  ($sizeMb Mo en ligne)"
 Say "Metadonnees      : aucune (verifie)" 'Green'
+if ($cal.Count) {
+  $lastDay = [datetime]::ParseExact(($cal.Keys | Sort-Object | Select-Object -Last 1), 'yyyy-MM-dd', $inv)
+  $left = ($lastDay - $today).Days
+  if ($left -lt 0) {
+    Say ("Calendrier       : termine le {0} - {1} jour(s) sans photo" -f $lastDay.ToString('dd/MM/yyyy', $inv), -$left) 'Red'
+    Say "Ajoutez des photos : elles completeront ces jours en priorite." 'Red'
+  } else {
+    $color = if ($left -lt 14) { 'DarkYellow' } else { 'Gray' }
+    Say ("Calendrier       : jusqu'au {0} ({1} jour(s) restant(s))" -f $lastDay.ToString('dd/MM/yyyy', $inv), $left) $color
+    if ($left -lt 14) { Say "Pensez a ajouter des photos avant cette date !" 'DarkYellow' }
+  }
+}
 Write-Host ''
 
 if (-not $Publier) { exit 0 }
@@ -226,8 +221,9 @@ if ($email -notmatch '@users\.noreply\.github\.com$') {
 }
 
 & git add -A
-$staged = @(& git diff --cached --name-only)
-if (-not $staged.Count) { Say 'Rien de nouveau a publier.' 'Green'; Write-Host ''; exit 0 }
+# Fichiers ajoutes ou modifies (les suppressions n'ont rien a verifier)
+$staged = @(& git -c core.quotepath=false diff --cached --name-only --diff-filter=d)
+if (-not $staged.Count -and -not @(& git diff --cached --name-only).Count) { Say 'Rien de nouveau a publier.' 'Green'; Write-Host ''; exit 0 }
 
 $bad = @($staged | Where-Object {
   ($_ -match '\.(jpe?g|png|webp|heic|heif|avif|gif|tiff?|bmp|mp4|mov)$' -and $_ -notmatch '^photos/((mini/)?[0-9a-f]{16}|portrait)\.jpg$') -or

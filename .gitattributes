@@ -1,0 +1,5 @@
+# Fins de ligne fixes : evite les avertissements « LF will be replaced by CRLF »
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jpg binary
+*.woff2 binary
